@@ -9,7 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import ObjectDoesNotExist
 
 import json
-
+from json.decoder import JSONDecodeError
 # Create your views here.
 
 @csrf_exempt
@@ -40,6 +40,7 @@ def signin(request):
             user = User.objects.get(email=email)
         except ObjectDoesNotExist as e:
             return HttpResponse(status=401)
+        print(user.username)
         user = authenticate(request, username=user.username, password=password)
         if user is not None:
             login(request, user)
@@ -138,4 +139,4 @@ def token(request):
     if request.method == 'GET':
         return HttpResponse(status=204)
     else:
-        return HttpResponseNotAllowed(['GET'])
+        return HttpResponse(status=405)
