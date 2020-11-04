@@ -11,3 +11,6 @@ Inside the folder but outside repository:
 5. Run server
 ``` python manage.py runserver & ```
 
+# Deployed to:
+
+https://healthbuzz-server.herokuapp.com/
