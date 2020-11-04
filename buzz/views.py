@@ -5,10 +5,13 @@ from django.contrib.auth import authenticate, login, logout
 from django.views.decorators.csrf import ensure_csrf_cookie
 from .models import StretchingData, WaterData
 from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.csrf import csrf_exempt
+
 import json
 
 # Create your views here.
 
+@csrf_exempt
 def signup(request):
     if request.method == 'POST':
         try:
@@ -23,6 +26,7 @@ def signup(request):
     else:
         return HttpResponse(status=405)
 
+@csrf_exempt
 def signin(request):
     if request.method == 'POST':
         try:
@@ -40,6 +44,7 @@ def signin(request):
     else:
         return HttpResponse(status=405)
 
+@csrf_exempt
 def signout(request):
     if request.method == 'GET':
         if request.user.is_authenticated:
@@ -49,6 +54,7 @@ def signout(request):
     else:
         return HttpResponse(status=405)
 
+@csrf_exempt
 def waterdata(request):
     if request.method == 'GET':
         if not request.user.is_authenticated:
@@ -85,6 +91,7 @@ def waterdata(request):
     else:
         return HttpResponse(status=405)
 
+@csrf_exempt
 def stretchingdata(request):
     if request.method == 'GET':
         if not request.user.is_authenticated:
