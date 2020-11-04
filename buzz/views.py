@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.views.decorators.csrf import ensure_csrf_cookie
 from .models import StretchingData, WaterData
+from django.views.decorators.csrf import ensure_csrf_cookie
 import json
 
 # Create your views here.
@@ -120,3 +121,9 @@ def stretchingdata(request):
     else:
         return HttpResponse(status=405)
 
+@ensure_csrf_cookie
+def token(request):
+    if request.method == 'GET':
+        return HttpResponse(status=204)
+    else:
+        return HttpResponseNotAllowed(['GET'])

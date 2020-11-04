@@ -7,4 +7,5 @@ urlpatterns = [
     path('signout/', views.signout, name='signout'),
     path('waterdata/', views.waterdata, name='waterdata'),
     path('stretchingdata/', views.stretchingdata, name='stretchingdata'),
+    path('token/', views.token, name='token'),
 ]
