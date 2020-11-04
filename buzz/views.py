@@ -40,7 +40,6 @@ def signin(request):
             user = User.objects.get(email=email)
         except ObjectDoesNotExist as e:
             return HttpResponse(status=401)
-        print(user.username)
         user = authenticate(request, username=user.username, password=password)
         if user is not None:
             login(request, user)
