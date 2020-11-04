@@ -6,6 +6,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from .models import StretchingData, WaterData
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.csrf import csrf_exempt
+from django.core.exceptions import ObjectDoesNotExist
 
 import json
 
@@ -35,7 +36,11 @@ def signin(request):
             password = req_data['password']
         except (KeyError, JSONDecodeError) as e:
             return HttpResponse(status=400)
-        user = authenticate(request, email=email, password=password)
+        try:
+            user = User.objects.get(email=email)
+        except ObjectDoesNotExist as e:
+            return HttpResponse(status=401)
+        user = authenticate(request, username=user.username, password=password)
         if user is not None:
             login(request, user)
             return HttpResponse(status=204)
