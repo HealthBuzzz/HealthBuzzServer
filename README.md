@@ -14,3 +14,9 @@ Inside the folder but outside repository:
 # Deployed to:
 
 https://healthbuzz-server.herokuapp.com/
+
+
+# Admin password
+ID: django
+PW: django
+
