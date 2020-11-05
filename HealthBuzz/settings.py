@@ -75,10 +75,22 @@ WSGI_APPLICATION = 'HealthBuzz.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
+# DATABASES = {
+#    'default': {
+#        'ENGINE': 'django.db.backends.sqlite3',
+#        'NAME': BASE_DIR / 'db.sqlite3',
+#    }
+# }
+
+# postgres://yasuoeugvxwenx:3a6389392883401d279bb2e5704bd7b22c6b500648dad87935c9a5d10003a166@ec2-34-200-106-49.compute-1.amazonaws.com:5432/d5l7sblnv3pklj
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "d5l7sblnv3pklj",
+        "USER": "yasuoeugvxwenx",
+        "PASSWORD": "3a6389392883401d279bb2e5704bd7b22c6b500648dad87935c9a5d10003a166",
+        "HOST": "ec2-34-200-106-49.compute-1.amazonaws.com",
+        "PORT": "5432",
     }
 }
 
@@ -122,4 +134,4 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
-django_heroku.settings(locals())
+# django_heroku.settings(locals())
