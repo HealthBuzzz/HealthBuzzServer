@@ -22,7 +22,12 @@ def signup(request):
             password = req_data['password']
         except (KeyError, JSONDecodeError) as e:
             return HttpResponse(status=400)
-        User.objects.create_user(username=username, email=email, password=password)
+        new_user = User.objects.create_user(username=username, email=email, password=password)
+        user_info = {
+            id: new_user.id,
+            name: new_user.username,
+        }
+        return JsonResponse(user_info, status=201) 
         return HttpResponse(status=201)
     else:
         return HttpResponse(status=405)
