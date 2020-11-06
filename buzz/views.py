@@ -49,10 +49,10 @@ def signin(request):
         if user is not None:
             login(request, user)
             user_info = {
-                id: user.id,
-                name: user.username,
+                'id': user.id,
+                'name': user.username,
             }
-            return JsonResponse(user_info, status=204)
+            return JsonResponse(user_info, status=200)
         else:
             return HttpResponse(status=401)
     else:
