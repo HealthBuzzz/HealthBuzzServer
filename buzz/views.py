@@ -48,7 +48,11 @@ def signin(request):
         user = authenticate(request, username=user.username, password=password)
         if user is not None:
             login(request, user)
-            return HttpResponse(status=204)
+            user_info = {
+                id: user.id,
+                name: user.username,
+            }
+            return JsonResponse(user_info, status=204)
         else:
             return HttpResponse(status=401)
     else:
