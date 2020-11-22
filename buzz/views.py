@@ -3,7 +3,7 @@ from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.views.decorators.csrf import ensure_csrf_cookie
-from .models import StretchingData, WaterData
+from .models import StretchingData, WaterData, Profile, DailyStretching, DailyWater
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import ObjectDoesNotExist
@@ -27,8 +27,9 @@ def signup(request):
             id: new_user.id,
             name: new_user.username,
         }
+        profile = Profile(user=new_user)
+        profile.save()
         return JsonResponse(user_info, status=201) 
-        return HttpResponse(status=201)
     else:
         return HttpResponse(status=405)
 
@@ -98,9 +99,13 @@ def waterdata(request):
         waterdata = WaterData(user_id=request.user.id, year=year, month=month,
                 day=day, amount=amount)
         waterdata.save()
-        response_dict = {'id': waterdata.id, 'year': waterdata.year, 'month':
-                waterdata.month, 'day': waterdata.day, 'amount':
-                waterdata.amount}
+        response_dict = {
+            'id': waterdata.id, 
+            'year': waterdata.year, 
+            'month': waterdata.month, 
+            'day': waterdata.day, 
+            'amount': waterdata.amount
+            }
         return JsonResponse(response_dict, status=201)
     else:
         return HttpResponse(status=405)
@@ -135,12 +140,79 @@ def stretchingdata(request):
         stretchingdata = StretchingData(user_id=request.user.id, year=year, month=month,
                 day=day, amount=amount)
         stretchingdata.save()
-        response_dict = {'id': stretchingdata.id, 'year': stretchingdata.year, 'month':
-                stretchingdata.month, 'day': stretchingdata.day, 'amount':
-                stretchingdata.amount}
+        response_dict = {'id': stretchingdata.id, 
+                         'year': stretchingdata.year, 
+                         'month': stretchingdata.month, 
+                         'day': stretchingdata.day, 
+                         'amount': stretchingdata.amount
+                         }
         return JsonResponse(response_dict, status=201)
     else:
         return HttpResponse(status=405)
+    
+@csrf_exempt
+def today(request):
+    if request.method == 'GET':
+        if not request.user.is_authenticated:
+            return HttpResponse(status=401)
+        profile = request.user.profile
+        response = {
+            'today_stretching_count': profile.today_stretching_count,
+            'today_water_count': profile.today_water_count,
+            'today_ranking': profile.user.today_ranking,
+        }
+        return JsonResponse(response, status=200)
+    else:
+        return HttpResponse(status=405)
+
+@csrf_exempt
+def today_stretching(request):
+    if request.method == 'GET':
+        if not request.user.is_authenticated:
+            return HttpResponse(status=401)
+        response = list(DailyStretching.objects \
+                        .filter(user_id=request.user.id).values('hour','minute'))
+        return JsonResponse(response, status=200)
+    elif request.method == 'POST':
+        if not request.user.is_authenticated:
+            return HttpResponse(status=401)
+        req_data = json.loads(request.body.decode())
+        profile = request.user.profile
+        daily_stretching = DailyStretching(user=request.user,
+                                          hour=req_data.hour,
+                                          minute=req_data.minute)
+        daily_stretching.save()
+        profile.today_stretching_count = profile.today_stretching_count + 1
+        profile.save()
+        response = {
+            'today_stretching_count': profile.today_stretching_count,
+        }
+        return JsonResponse(response, status=204)
+
+@csrf_exempt
+def today_water(request):
+    if request.method == 'GET':
+        if not request.user.is_authenticated:
+            return HttpResponse(status=401)
+        response = list(DailyWater.objects \
+                        .filter(user_id=request.user.id).values('hour','minute'))
+        return JsonResponse(response, status=200)
+    elif request.method == 'POST':
+        if not request.user.is_authenticated:
+            return HttpResponse(status=401)
+        req_data = json.loads(request.body.decode())
+        profile = request.user.profile
+        daily_water = DailyWater(user=request.user,
+                                          hour=req_data.hour,
+                                          minute=req_data.minute,
+                                          amount=req_data.amount)
+        daily_water.save()
+        profile.today_water_count = profile.today_water_count + req_data.amount
+        profile.save()
+        response = {
+            'today_stretching_count': profile.today_water_count
+        }
+        return JsonResponse(response, status=204)
 
 @ensure_csrf_cookie
 def token(request):

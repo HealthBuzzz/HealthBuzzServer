@@ -3,6 +3,23 @@ from django.contrib.auth.models import User
 
 # Create your models here.
 
+class Profile(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    today_stretching_count = models.IntegerField(default=0)
+    today_water_count = models.IntegerField(default=0)
+    today_ranking = models.IntegerField(default=100)
+
+class DailyStretching(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='daily_stretching')
+    hour = models.IntegerField()
+    minute = models.IntegerField()
+    
+class DailyWater(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='daily_water')
+    hour = models.IntegerField()
+    minute = models.IntegerField()
+    amount = models.IntegerField()
+    
 class StretchingData(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     year = models.IntegerField()
