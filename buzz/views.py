@@ -186,6 +186,8 @@ def today_stretching(request):
         profile.save()
         response = {
             'today_stretching_count': profile.today_stretching_count,
+            'today_water_count': profile.today_water_count,
+            'today_ranking': profile.today_ranking,
         }
         return JsonResponse(response, status=204)
 
@@ -210,7 +212,9 @@ def today_water(request):
         profile.today_water_count = profile.today_water_count + req_data.amount
         profile.save()
         response = {
-            'today_stretching_count': profile.today_water_count
+            'today_stretching_count': profile.today_stretching_count,
+            'today_water_count': profile.today_water_count,
+            'today_ranking': profile.today_ranking,
         }
         return JsonResponse(response, status=204)
 
