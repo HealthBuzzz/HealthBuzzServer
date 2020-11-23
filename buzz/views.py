@@ -24,8 +24,8 @@ def signup(request):
             return HttpResponse(status=400)
         new_user = User.objects.create_user(username=username, email=email, password=password)
         user_info = {
-            id: new_user.id,
-            name: new_user.username,
+            'id': new_user.id,
+            'name': new_user.username,
         }
         profile = Profile(user=new_user)
         profile.save()
@@ -155,15 +155,15 @@ def today(request):
     if request.method == 'GET':
         if not request.user.is_authenticated:
             return HttpResponse(status=401)
-        profile = request.user.profile
         ranking = calculate_ranking(request.user)
+        profile = request.user.profile
         profile.today_ranking = ranking
         profile.save()
         
         response = {
             'today_stretching_count': profile.today_stretching_count,
             'today_water_count': profile.today_water_count,
-            'today_ranking': profile.user.today_ranking,
+            'today_ranking': profile.today_ranking,
         }
         return JsonResponse(response, status=200)
     else:
@@ -176,15 +176,15 @@ def today_stretching(request):
             return HttpResponse(status=401)
         response = list(DailyStretching.objects \
                         .filter(user_id=request.user.id).values('hour','minute'))
-        return JsonResponse(response, status=200)
+        return JsonResponse(response, status=200, safe=False)
     elif request.method == 'POST':
         if not request.user.is_authenticated:
             return HttpResponse(status=401)
         req_data = json.loads(request.body.decode())
         profile = request.user.profile
         daily_stretching = DailyStretching(user=request.user,
-                                          hour=req_data.hour,
-                                          minute=req_data.minute)
+                                          hour=req_data['hour'],
+                                          minute=req_data['minute'])
         daily_stretching.save()
         profile.today_stretching_count = profile.today_stretching_count + 1
 
@@ -206,16 +206,16 @@ def today_water(request):
             return HttpResponse(status=401)
         response = list(DailyWater.objects \
                         .filter(user_id=request.user.id).values('hour','minute'))
-        return JsonResponse(response, status=200)
+        return JsonResponse(response, status=200, safe=False)
     elif request.method == 'POST':
         if not request.user.is_authenticated:
             return HttpResponse(status=401)
         req_data = json.loads(request.body.decode())
         profile = request.user.profile
         daily_water = DailyWater(user=request.user,
-                                          hour=req_data.hour,
-                                          minute=req_data.minute,
-                                          amount=req_data.amount)
+                                          hour=req_data['hour'],
+                                          minute=req_data['minute'],
+                                          amount=req_data['amount'])
         daily_water.save()
         profile.today_water_count = profile.today_water_count + req_data.amount
 
@@ -233,8 +233,8 @@ def today_water(request):
 def calculate_ranking(user):
     id_and_point_list = []
     for profile in Profile.objects.values():
-        point = profile.today_stretching*(2000/5) + profile.today_water
-        id_and_point_list.append((profile.user.id, point))
+        point = profile['today_stretching_count']*(2000/5) + profile['today_water_count']
+        id_and_point_list.append((profile['user_id'], point))
     sorted(id_and_point_list, key=lambda id_and_point: id_and_point[1])
     for i, id_and_point in enumerate(id_and_point_list):
         if id_and_point[0] == user.id:
