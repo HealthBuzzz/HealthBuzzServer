@@ -156,6 +156,10 @@ def today(request):
         if not request.user.is_authenticated:
             return HttpResponse(status=401)
         profile = request.user.profile
+        ranking = calculate_ranking(request.user)
+        profile.today_ranking = ranking
+        profile.save()
+        
         response = {
             'today_stretching_count': profile.today_stretching_count,
             'today_water_count': profile.today_water_count,
@@ -183,6 +187,10 @@ def today_stretching(request):
                                           minute=req_data.minute)
         daily_stretching.save()
         profile.today_stretching_count = profile.today_stretching_count + 1
+
+        ranking = calculate_ranking(request.user)
+        profile.today_ranking = ranking
+
         profile.save()
         response = {
             'today_stretching_count': profile.today_stretching_count,
@@ -210,6 +218,10 @@ def today_water(request):
                                           amount=req_data.amount)
         daily_water.save()
         profile.today_water_count = profile.today_water_count + req_data.amount
+
+        ranking = calculate_ranking(request.user)
+        profile.today_ranking = ranking
+
         profile.save()
         response = {
             'today_stretching_count': profile.today_stretching_count,
@@ -218,9 +230,21 @@ def today_water(request):
         }
         return JsonResponse(response, status=204)
 
+def calculate_ranking(user):
+    id_and_point_list = []
+    for profile in Profile.objects.values():
+        point = profile.today_stretching*(2000/5) + profile.today_water
+        id_and_point_list.append((profile.user.id, point))
+    sorted(id_and_point_list, key=lambda id_and_point: id_and_point[1])
+    for i, id_and_point in enumerate(id_and_point_list):
+        if id_and_point[0] == user.id:
+            return int(((len(id_and_point_list)-i) / len(id_and_point_list))*100)
+    # No profile that includes the user
+    return -1
 @ensure_csrf_cookie
 def token(request):
     if request.method == 'GET':
         return HttpResponse(status=204)
     else:
         return HttpResponse(status=405)
+
