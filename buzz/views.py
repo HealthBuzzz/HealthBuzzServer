@@ -230,7 +230,7 @@ def today_stretching(request):
             'today_ranking_stretch': profile.today_ranking_stretch,
             'today_ranking_water': profile.today_ranking_water,
         }
-        return JsonResponse(response, status=204)
+        return JsonResponse(response, status=201)
 
 @csrf_exempt
 def today_water(request):
@@ -262,7 +262,7 @@ def today_water(request):
             'today_ranking_stretch': profile.today_ranking_stretch,
             'today_ranking_water': profile.today_ranking_water,
         }
-        return JsonResponse(response, status=204)
+        return JsonResponse(response, status=201)
 
 def calculate_ranking_stretch(user):
     id_and_point_list = []
