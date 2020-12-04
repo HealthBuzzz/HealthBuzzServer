@@ -158,7 +158,8 @@ def today(request):
         ranking_stretch = calculate_ranking_stretch(request.user)
         ranking_water = calculate_ranking_water(request.user)
         profile = request.user.profile
-        profile.today_ranking = ranking
+        profile.today_ranking_stretch = ranking_stretch
+        profile.today_ranking_water = ranking_water
         profile.save()
         
         response = {
