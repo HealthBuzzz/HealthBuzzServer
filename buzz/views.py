@@ -220,6 +220,7 @@ def today_stretching(request):
                                           minute=req_data['minute'])
         daily_stretching.save()
         profile.today_stretching_count = profile.today_stretching_count + 1
+        profile.save()
 
         ranking = calculate_ranking_stretch(request.user)
         profile.today_ranking_stretch = ranking
@@ -252,6 +253,7 @@ def today_water(request):
         #                                  amount=req_data['amount'])
         #daily_water.save()
         profile.today_water_count = req_data.amount
+        profile.save()
 
         ranking = calculate_ranking_water(request.user)
         profile.today_ranking_water = ranking
