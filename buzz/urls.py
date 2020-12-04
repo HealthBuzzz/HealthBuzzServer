@@ -8,7 +8,7 @@ urlpatterns = [
     path('year/stretching/', views.stretchingdata, name='stretchingdata'),
     path('year/water/', views.waterdata, name='waterdata'),
     path('today/', views.today),
-    path('today/communtiy/', views.today_community),
+    path('today/community/', views.today_community),
     path('today/refresh/', views.today_refresh),
     path('today/stretching/', views.today_stretching),
     path('today/water/', views.today_water),

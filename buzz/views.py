@@ -180,14 +180,17 @@ def today_community(request):
             return HttpResponse(status=401)
 
         q_set_stretching = \
-            Profile.objects.order_by(F('today_stretching_count').asc(nulls_last=True))\
-                .select_related('user').values_list('user__username','today_stretching_count')
+            Profile.objects.order_by(F('today_stretching_count').desc(nulls_last=True))\
+                .select_related('user').values('today_stretching_count',username=F('user__username'))
         
         q_set_water = \
-            Profile.objects.order_by(F('today_water_count').asc(nulls_last=True))\
-                .select_related('user').values_list('user__username','today_water_count')
+            Profile.objects.order_by(F('today_water_count').desc(nulls_last=True))\
+                .select_related('user').values('today_water_count',username=F('user__username'))
 
-        return JsonResponse([list(q_set_stretching),list(q_set_water)], status=200)
+        return JsonResponse({
+            'stretching': list(q_set_stretching),
+            'water': list(q_set_water)
+            }, status=200)
     else:
         return HttpResponse(status=405)
 
