@@ -270,7 +270,8 @@ def calculate_ranking_stretch(user):
     for profile in Profile.objects.values():
         point = profile['today_stretching_count']
         id_and_point_list.append((profile['user_id'], point))
-    sorted(id_and_point_list, key=lambda id_and_point: id_and_point[1])
+    sorted(id_and_point_list, key=lambda id_and_point: id_and_point[1],
+            reverse=True)
     for i, id_and_point in enumerate(id_and_point_list):
         if id_and_point[0] == user.id:
             return int(((i+1) / len(id_and_point_list))*100)
@@ -282,7 +283,8 @@ def calculate_ranking_water(user):
     for profile in Profile.objects.values():
         point = profile['today_water_count']
         id_and_point_list.append((profile['user_id'], point))
-    sorted(id_and_point_list, key=lambda id_and_point: id_and_point[1])
+    sorted(id_and_point_list, key=lambda id_and_point: id_and_point[1],
+            reverse=True)
     for i, id_and_point in enumerate(id_and_point_list):
         if id_and_point[0] == user.id:
             return int(((i+1) / len(id_and_point_list))*100)
