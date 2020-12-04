@@ -8,6 +8,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import ObjectDoesNotExist
 
+from datetime import datetime
 import json
 from json.decoder import JSONDecodeError
 # Create your views here.
@@ -78,7 +79,6 @@ def waterdata(request):
         for waterdata in WaterData.objects.all().values():
             if waterdata['user_id'] == request.user.id:
                 waterdata_list.append({
-                    'user': waterdata['user_id'],
                     'year': waterdata['year'],
                     'month': waterdata['month'],
                     'day': waterdata['day'],
@@ -144,7 +144,7 @@ def stretchingdata(request):
                          'year': stretchingdata.year, 
                          'month': stretchingdata.month, 
                          'day': stretchingdata.day, 
-                         'amount': stretchingdata.amount
+                         'amount': stretchingdata.amount,
                          }
         return JsonResponse(response_dict, status=201)
     else:
@@ -155,7 +155,8 @@ def today(request):
     if request.method == 'GET':
         if not request.user.is_authenticated:
             return HttpResponse(status=401)
-        ranking = calculate_ranking(request.user)
+        ranking_stretch = calculate_ranking_stretch(request.user)
+        ranking_water = calculate_ranking_water(request.user)
         profile = request.user.profile
         profile.today_ranking = ranking
         profile.save()
@@ -163,7 +164,38 @@ def today(request):
         response = {
             'today_stretching_count': profile.today_stretching_count,
             'today_water_count': profile.today_water_count,
-            'today_ranking': profile.today_ranking,
+            'today_ranking_stretch': profile.today_ranking_stretch,
+            'today_ranking_water': profile.today_ranking_water,
+        }
+        return JsonResponse(response, status=200)
+    else:
+        return HttpResponse(status=405)
+
+@csrf_exempt
+def today_refresh(request):
+    if request.method == 'GET':
+        if not request.user.is_authenticated:
+            return HttpResponse(status=401)
+
+        new = StretchingData(
+            user=request.user,
+            year=datetime.today().year,        # 현재 연도 가져오기
+            month=datetime.today().month,
+            day=datetime.today().day,
+            amount=request.user.profile.today_stretching_count,
+        )
+        new.save()
+        request.user.profile.today_stretching_count = 0
+        request.user.profile.today_water_count = 0
+        request.user.profile.today_ranking_stretch = 100
+        request.user.profile.today_ranking_water = 100
+        request.user.profile.save()
+
+        response = {
+            'today_stretching_count': profile.today_stretching_count,
+            'today_water_count': profile.today_water_count,
+            'today_ranking_stretch': profile.today_ranking_stretch,
+            'today_ranking_water': profile.today_ranking_water,
         }
         return JsonResponse(response, status=200)
     else:
@@ -188,14 +220,15 @@ def today_stretching(request):
         daily_stretching.save()
         profile.today_stretching_count = profile.today_stretching_count + 1
 
-        ranking = calculate_ranking(request.user)
-        profile.today_ranking = ranking
+        ranking = calculate_ranking_stretch(request.user)
+        profile.today_ranking_stretch = ranking
 
         profile.save()
         response = {
             'today_stretching_count': profile.today_stretching_count,
             'today_water_count': profile.today_water_count,
-            'today_ranking': profile.today_ranking,
+            'today_ranking_stretch': profile.today_ranking_stretch,
+            'today_ranking_water': profile.today_ranking_water,
         }
         return JsonResponse(response, status=204)
 
@@ -212,35 +245,49 @@ def today_water(request):
             return HttpResponse(status=401)
         req_data = json.loads(request.body.decode())
         profile = request.user.profile
-        daily_water = DailyWater(user=request.user,
-                                          hour=req_data['hour'],
-                                          minute=req_data['minute'],
-                                          amount=req_data['amount'])
-        daily_water.save()
-        profile.today_water_count = profile.today_water_count + req_data.amount
+        #daily_water = DailyWater(user=request.user,
+        #                                  hour=req_data['hour'],
+        #                                  minute=req_data['minute'],
+        #                                  amount=req_data['amount'])
+        #daily_water.save()
+        profile.today_water_count = req_data.amount
 
-        ranking = calculate_ranking(request.user)
-        profile.today_ranking = ranking
+        ranking = calculate_ranking_water(request.user)
+        profile.today_ranking_water = ranking
 
         profile.save()
         response = {
             'today_stretching_count': profile.today_stretching_count,
             'today_water_count': profile.today_water_count,
-            'today_ranking': profile.today_ranking,
+            'today_ranking_stretch': profile.today_ranking_stretch,
+            'today_ranking_water': profile.today_ranking_water,
         }
         return JsonResponse(response, status=204)
 
-def calculate_ranking(user):
+def calculate_ranking_stretch(user):
     id_and_point_list = []
     for profile in Profile.objects.values():
-        point = profile['today_stretching_count']*(2000/5) + profile['today_water_count']
+        point = profile['today_stretching_count']
         id_and_point_list.append((profile['user_id'], point))
     sorted(id_and_point_list, key=lambda id_and_point: id_and_point[1])
     for i, id_and_point in enumerate(id_and_point_list):
         if id_and_point[0] == user.id:
-            return int(((len(id_and_point_list)-i) / len(id_and_point_list))*100)
+            return int(((i+1) / len(id_and_point_list))*100)
     # No profile that includes the user
     return -1
+
+def calculate_ranking_water(user):
+    id_and_point_list = []
+    for profile in Profile.objects.values():
+        point = profile['today_water_count']
+        id_and_point_list.append((profile['user_id'], point))
+    sorted(id_and_point_list, key=lambda id_and_point: id_and_point[1])
+    for i, id_and_point in enumerate(id_and_point_list):
+        if id_and_point[0] == user.id:
+            return int(((i+1) / len(id_and_point_list))*100)
+    # No profile that includes the user
+    return -1
+
 @ensure_csrf_cookie
 def token(request):
     if request.method == 'GET':
