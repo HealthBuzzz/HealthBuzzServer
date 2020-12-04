@@ -181,11 +181,13 @@ def today_community(request):
 
         q_set_stretching = \
             Profile.objects.order_by(F('today_stretching_count').desc(nulls_last=True))\
-                .select_related('user').values('today_stretching_count',username=F('user__username'))
+                .select_related('user').values(count=F('today_stretching_count'),\
+                username=F('user__username'))
         
         q_set_water = \
             Profile.objects.order_by(F('today_water_count').desc(nulls_last=True))\
-                .select_related('user').values('today_water_count',username=F('user__username'))
+                .select_related('user').values(count=F('today_water_count'),\
+                username=F('user__username'))
 
         return JsonResponse({
             'stretching': list(q_set_stretching),
