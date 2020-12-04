@@ -7,6 +7,7 @@ from .models import StretchingData, WaterData, Profile, DailyStretching, DailyWa
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import F
 
 from datetime import datetime
 import json
@@ -173,6 +174,24 @@ def today(request):
         return HttpResponse(status=405)
 
 @csrf_exempt
+def today_community(request):
+    if request.method == 'GET':
+        if not request.user.is_authenticated:
+            return HttpResponse(status=401)
+
+        q_set_stretching = \
+            Profile.objects.order_by(F('today_stretching_count').asc(nulls_last=True))\
+                .select_related('user').values_list('user__username','today_stretching_count')
+        
+        q_set_water = \
+            Profile.objects.order_by(F('today_water_count').asc(nulls_last=True))\
+                .select_related('user').values_list('user__username','today_water_count')
+
+        return JsonResponse([list(q_set_stretching),list(q_set_water)], status=200)
+    else:
+        return HttpResponse(status=405)
+
+@csrf_exempt
 def today_refresh(request):
     if request.method == 'GET':
         if not request.user.is_authenticated:
@@ -191,6 +210,7 @@ def today_refresh(request):
         request.user.profile.today_ranking_stretch = 100
         request.user.profile.today_ranking_water = 100
         request.user.profile.save()
+        profile = request.user.profile
 
         response = {
             'today_stretching_count': profile.today_stretching_count,
