@@ -229,6 +229,7 @@ def today_stretching(request):
        
         try:
             new_stretch = StretchingData.objects.get(
+                user=request.user,
                 year=datetime.today().year,        # 현재 연도 가져오기
                 month=datetime.today().month,
                 day=datetime.today().day,
@@ -281,6 +282,7 @@ def today_water(request):
 
         try:
             new_= WaterData.objects.get(
+                user=request.user,
                 year=datetime.today().year,        # 현재 연도 가져오기
                 month=datetime.today().month,
                 day=datetime.today().day,
