@@ -226,6 +226,25 @@ def today_stretching(request):
         profile.today_ranking_stretch = ranking
 
         profile.save()
+       
+        try:
+            new_stretch = StretchingData.objects.get(
+                year=datetime.today().year,        # 현재 연도 가져오기
+                month=datetime.today().month,
+                day=datetime.today().day,
+            )
+        except:
+            new_stretch = StretchingData(
+                user=request.user,
+                year=datetime.today().year,        # 현재 연도 가져오기
+                month=datetime.today().month,
+                day=datetime.today().day,
+                amount=0
+                )
+        new_stretch.amount += 1
+        new_stretch.save()
+            
+
         response = {
             'today_stretching_count': profile.today_stretching_count,
             'today_water_count': profile.today_water_count,
@@ -259,6 +278,25 @@ def today_water(request):
         profile.today_ranking_water = ranking
 
         profile.save()
+
+        try:
+            new_= WaterData.objects.get(
+                year=datetime.today().year,        # 현재 연도 가져오기
+                month=datetime.today().month,
+                day=datetime.today().day,
+            )
+        except:
+            new_= WaterData(
+                user=request.user,
+                year=datetime.today().year,        # 현재 연도 가져오기
+                month=datetime.today().month,
+                day=datetime.today().day,
+                amount=0
+                )
+        new_.amount = req_data['amount']
+        new_.save()
+            
+
         response = {
             'today_stretching_count': profile.today_stretching_count,
             'today_water_count': profile.today_water_count,
